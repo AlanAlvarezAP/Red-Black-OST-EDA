@@ -17,5 +17,7 @@ public:
 	Preprocesador(const std::string& stop);
 	void Limpieza(const std::string& texto);
 	void Tokenizar();
+	void Stop_words();
 	void Porter_Stemming();
+	void Conteo();
 };
