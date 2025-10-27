@@ -13,4 +13,5 @@ int main()
     std::cin >> dir;
     prepo.Limpieza(dir);
     prepo.Tokenizar();
+    prepo.Porter_Stemming();
 }

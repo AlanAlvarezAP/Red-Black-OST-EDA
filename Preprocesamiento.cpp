@@ -1,5 +1,5 @@
 #include "Preprocesamiento.h"
-
+#include "Porter.h"
 
 Preprocesador::Preprocesador(const std::string& stop) {
 	std::string read;
@@ -47,5 +47,22 @@ void Preprocesador::Tokenizar() {
 	}
 	if (!token.empty()) {
 		tokens.push_back(token);
+	}
+}
+
+void Preprocesador::Porter_Stemming() {
+	for (int i = 0; i < tokens.size(); i++) {
+		if (tokens[i] == "crunchy") {
+			std::cout << "Lo encontre " << std::endl;
+		}
+		Porter port(tokens[i]);
+		port.paso_1_a_b();
+		port.paso_1_c();
+		port.paso_2();
+		port.paso_3();
+		port.paso_4();
+		port.paso_5_a_b();
+		tokens[i] = port.copy_of_original;
+		std::cout << tokens[i] << std::endl;
 	}
 }
