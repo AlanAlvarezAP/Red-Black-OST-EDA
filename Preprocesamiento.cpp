@@ -4,6 +4,10 @@
 Preprocesador::Preprocesador(const std::string& stop) {
 	std::string read;
 	lector.open(stop);
+	if (!lector.is_open()) {
+		std::cout << " No se pudo abrir el archivo en el constructor " << stop << std::endl;
+		return;
+	}
 	while (lector >> read) {
 		stop_words.insert(read);
 	}
@@ -14,17 +18,20 @@ Preprocesador::Preprocesador(const std::string& stop) {
 // Posible mejora toda función con to... puede dar error si hay tildes seria static_cast<unsigned char> en ese caso preguntar
 void Preprocesador::Limpieza(const std::string& texto) {
 	std::string lineas;
-	final_text.clear();
 	lector.open(texto);
+	if (!lector.is_open()) {
+		std::cout << " No se puedo leer el archivo " << std::endl;
+		return;
+	}
 	while (std::getline(lector,lineas)) {
 		for (unsigned char c : lineas) {
 			if (c == '\t' || c == '\n') {
 				final_text.push_back(' ');
 			}
-			else if (c == '\'' || c == ' ') {
+			else if (c == ' ') {
 				final_text.push_back(c);
 			}
-			else if (std::isalpha(c)) {
+			else if (std::isalpha(static_cast<unsigned char>(c))) {
 				final_text.push_back(std::tolower(c));
 			}
 		}
@@ -32,6 +39,7 @@ void Preprocesador::Limpieza(const std::string& texto) {
 	}
 	final_text = std::regex_replace(final_text, std::regex("^\\s+|\\s+$"), "");
 	final_text = std::regex_replace(final_text, std::regex("\\s+"), " ");
+	lector.close();
 }
 
 void Preprocesador::Tokenizar() {
@@ -50,6 +58,16 @@ void Preprocesador::Tokenizar() {
 	}
 }
 
+void Preprocesador::Stop_words() {
+	std::vector<std::string> tokens_noStop;
+	for (const auto& tok : tokens) {
+		if (stop_words.find(tok) == stop_words.end()) {
+			tokens_noStop.push_back(tok);
+		}
+	}
+	tokens = std::move(tokens_noStop);
+}
+
 void Preprocesador::Porter_Stemming() {
 	for (int i = 0; i < tokens.size(); i++) {
 		Porter port(tokens[i]);
@@ -60,6 +78,102 @@ void Preprocesador::Porter_Stemming() {
 		port.paso_4();
 		port.paso_5_a_b();
 		tokens[i] = port.copy_of_original;
-		std::cout << tokens[i] << std::endl;
 	}
+}
+
+std::vector<std::string> Preprocesador::generar_ngrams(const std::vector<std::string>& tokens, int n) {
+	std::vector<std::string> ngrams;
+	if (tokens.size() < n) {
+		return ngrams;
+	}
+
+	for (int i = 0; i <= tokens.size() - n; i++) {
+		std::string ngram = tokens[i];
+		for (int j = 1; j < n; j++) {
+			ngram += " " + tokens[i + j];
+		}
+		ngrams.push_back(ngram);
+	}
+	return ngrams;
+}
+
+
+void Preprocesador::Conteo() {
+	std::unordered_map<std::string, int> conteo_unigram;
+	std::unordered_map<std::string, int> conteo_bigrams;
+	std::unordered_map<std::string, int> conteo_trigrams;
+	for (const auto& p : tokens) {
+		conteo_unigram[p]++;
+	}
+
+	for (const auto& bigram : generar_ngrams(tokens, 2)) {
+		conteo_bigrams[bigram]++;
+	}
+
+	for (const auto& trigram : generar_ngrams(tokens, 3)) {
+		conteo_trigrams[trigram]++;
+	}
+
+	int max_freq = INT_MIN;
+	for (auto& p : conteo_unigram) {
+		if (p.second > max_freq) {
+			max_freq = p.second;
+		}
+	}
+	for (auto& p : conteo_bigrams) {
+		if (p.second > max_freq) {
+			max_freq = p.second;
+		}
+	}
+	for (auto& p : conteo_trigrams) {
+		if (p.second > max_freq) {
+			max_freq = p.second;
+		}
+	}
+
+
+	int max_empate=0;
+	for (auto& p : conteo_trigrams) {
+		if (max_freq == p.second) {
+			topics.push_back(p.first);
+			max_empate++;
+			if (max_empate >= 3) {
+				return;
+			}
+		}
+	}
+	for (auto& p : conteo_bigrams) {
+		if (max_freq == p.second) {
+			topics.push_back(p.first);
+			max_empate++;
+			if (max_empate >= 3) {
+				return;
+			}
+		}
+	}
+	for (auto& p : conteo_unigram) {
+		if (max_freq == p.second) {
+			topics.push_back(p.first);
+			max_empate++;
+			if (max_empate >= 3) {
+				return;
+			}
+		}
+	}
+}
+
+
+
+void Preprocesador::print() {
+	std::cout << "Topicos de la notica " << std::endl;
+	for (const auto& p : topics) {
+		std::cout << p << " | ";
+	}
+	std::cout << std::endl;
+}
+
+void Preprocesador::reset() {
+	final_text.clear();
+	tokens.clear();
+	topics.clear();
 }
