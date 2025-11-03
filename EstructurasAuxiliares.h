@@ -23,8 +23,9 @@ public:
 			return *this;
 		}
 		T* tmp = new T[otro.capacity];
-		for (int i = 0; i < otro.size; i++)
+		for (int i = 0; i < otro.size; i++){
 			tmp[i] = otro.arr[i];
+		}
 		delete[] this->arr;
 		this->arr = tmp;
 		this->size = otro.size;

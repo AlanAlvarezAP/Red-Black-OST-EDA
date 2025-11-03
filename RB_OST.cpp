@@ -11,7 +11,7 @@ Node::Node(uint64_t mome,bool col,uint64_t max_moment, Node* l, Node* r, Node* p
 }
 
 RB_OST::RB_OST() {
-	nil = new Node(0,0,0,nullptr,nullptr,nullptr);
+	nil = new Node(0,0,0,nullptr,nullptr,nullptr,0);
     nil->left = nil;
     nil->right = nil;
     nil->parent = nil;
@@ -104,6 +104,7 @@ void RB_OST::AjustarForma(Node* raiz) {
         parent->color = 0;
         uncle->color = 0;
         grandparent->color = 1;
+        ActualizarMetadata(raiz);
         AjustarForma(grandparent);
         root->color = 0;
         return;
@@ -112,6 +113,8 @@ void RB_OST::AjustarForma(Node* raiz) {
         if (parent==grandparent->left) {
             if (parent->right == raiz) {
                 RotacionIzq(parent);
+                raiz = parent;
+                parent = raiz->parent;
             }
             parent->color = 0;
             grandparent->color = 1;
@@ -120,13 +123,14 @@ void RB_OST::AjustarForma(Node* raiz) {
         else {
             if (parent->left == raiz) {
                 RotacionDer(parent);
+                raiz = parent;
+                parent = raiz->parent;
             }
             parent->color = 0;
             grandparent->color = 1;
             RotacionIzq(grandparent);
         }
     }
-    
     root->color = 0;
 }
 
@@ -135,16 +139,13 @@ void RB_OST::Insert(MiArray<const char*> noticia, uint64_t moment) {
     Node* prev_parent = nil;
     preprinting();
     while ((*raiz) != nil) {
-        (*raiz)->size++;
-        if (moment > (*raiz)->max_moment_subtree) {
-            (*raiz)->max_moment_subtree = moment;
-        }
         prev_parent = *raiz;
         raiz = (moment < (*raiz)->momentos) ? &((*raiz)->left) : &((*raiz)->right);
     }
     *raiz = new Node(moment, 1, moment, nil, nil, prev_parent);
     (*raiz)->topicos = noticia;
     AjustarForma(*raiz);
+    ActualizarMetadata(*raiz);
     root->color = 0;
 }
 

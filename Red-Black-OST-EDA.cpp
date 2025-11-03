@@ -64,15 +64,44 @@ int main()
         {"Noticia T1", "Noticia T2", "Noticia T3"}
     };
 
-    uint64_t momentos[] = { 50, 120, 30, 180, 75, 90, 200, 60, 15, 250, 170, 110, 140, 220, 10, 5, 95, 135, 160, 300 };
+    uint64_t momentos_sets[][10] = {
+        {5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+        {100, 90, 80, 70, 60, 50, 40, 30, 20, 10},
+        {50, 20, 70, 10, 30, 60, 80, 25, 65, 85},
+        {100, 105, 102, 110, 108, 107, 120, 125, 123, 122},
+        {10, 1000, 500, 1500, 250, 750, 1250, 1750, 50, 2000}
+    };
 
-    for (int i = 0; i < 20; ++i) {
-        MiArray<const char*> arr;
-        for (int j = 0; j < 3; ++j) {
-            arr.push_back(noticias[i][j]);
+    int total_sets = 5;
+    int noticias_usadas = 0;
+
+    for (int s = 0; s < total_sets; ++s) {
+        std::cout << "\n==============================\n";
+        std::cout << " Conjunto " << s + 1 << " de inserciones\n";
+        std::cout << "==============================\n";
+
+        for (int i = 0; i < 10; ++i) {
+            MiArray<const char*> arr;
+            for (int j = 0; j < 3; ++j) {
+                arr.push_back(noticias[noticias_usadas % 20][j]);
+            }
+
+            uint64_t momento = momentos_sets[s][i];
+            if (s == 4) {
+                std::cout << "Esperando" << std::endl;
+            }
+            arbol.Insert(arr, momento);
+
+            std::cout << "\n Insertando momento " << momento << "...\n";
+            arbol.preprinting();
+            noticias_usadas++;
         }
-        arbol.Insert(arr, momentos[i]);
+
+        std::cout << "\n Árbol final del conjunto " << s + 1 << ":\n";
+        arbol.preprinting();
+        std::cout << "------------------------------------------\n";
+
+        // Reiniciar el árbol para el siguiente conjunto
+        arbol = RB_OST();
     }
-    std::cout << "Arbol RB_OST después de inserciones:" << std::endl;
-    arbol.preprinting();
 }
