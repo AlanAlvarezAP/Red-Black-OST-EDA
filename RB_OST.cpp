@@ -145,7 +145,9 @@ void RB_OST::Insert(MiArray<const char*> noticia, uint64_t moment) {
     *raiz = new Node(moment, 1, moment, nil, nil, prev_parent);
     (*raiz)->topicos = noticia;
     AjustarForma(*raiz);
-    ActualizarMetadata(*raiz);
+    for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
+        ActualizarMetadata(tmp);
+    }
     root->color = 0;
 }
 
