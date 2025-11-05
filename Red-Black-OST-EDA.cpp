@@ -39,7 +39,7 @@ int main()
         prepo.Conteo();
         prepo.print();
     }*/
-    /*RB_OST arbol;
+    RB_OST arbol;
 
     const char* noticias[] = {
         "Noticia A", "Noticia B", "Noticia C", "Noticia D",
@@ -67,8 +67,11 @@ int main()
     }
 
     std::cout << "Arbol final tras 25 inserciones" << std::endl;
-    arbol.preprinting();*/
-    UnorderedHash map;
+    arbol.preprinting();
+
+    std::cout << *((arbol.Select(arbol.root, 1))->momentos.last_elem());
+
+    /*UnorderedHash map;
 
     Node* n1 = new Node("hola", 1, false, 1, nullptr, nullptr, nullptr);
     Node* n2 = new Node("mundo", 2, false, 2, nullptr, nullptr, nullptr);
@@ -92,6 +95,6 @@ int main()
     delete n1;
     delete n2;
     delete n3;
-    delete n4;
+    delete n4;*/
     return 0;
 }

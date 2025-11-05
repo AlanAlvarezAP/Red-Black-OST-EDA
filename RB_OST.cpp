@@ -7,6 +7,7 @@ Node::Node(const char* noti,uint64_t mome, bool col, uint64_t max_moment, Node* 
 	parent = p;
 	max_moment_subtree = max_moment;
 	momentos.push_back(mome);
+    frecuencia = frecuencia_ventana = 1;
 	size = siz;
     int len = 0;
     const char* tmp = noti;
@@ -149,7 +150,6 @@ void RB_OST::AjustarForma(Node* raiz) {
 void RB_OST::Insert(const char* noticia, uint64_t moment) {
     Node** raiz = &root;
     Node* prev_parent = nil;
-    preprinting();
     while ((*raiz) != nil) {
         prev_parent = *raiz;
         raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
@@ -159,7 +159,21 @@ void RB_OST::Insert(const char* noticia, uint64_t moment) {
     for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
         ActualizarMetadata(tmp);
     }
+    //hash.insert_hash(*raiz); FALTA EL DELETE :(
     root->color = 0;
+}
+
+Node* RB_OST::Select(Node* raiz,int smallest_key) {
+    int r = raiz->left->size + 1;
+    if (smallest_key == r) {
+        return raiz;
+    }
+    else if (smallest_key < r) {
+        Select(raiz->left, smallest_key);
+    }
+    else {
+        Select(raiz->right, smallest_key-r);
+    }
 }
 
 void RB_OST::printing(Node* raiz, int nivel) {
@@ -176,7 +190,7 @@ void RB_OST::printing(Node* raiz, int nivel) {
 }
 
 void RB_OST::preprinting() {
-    std::cout << "Datos desde la raiz";
+    std::cout << "Datos desde la raiz" << std::endl;
     std::cout << "color | size | momentos | max_moment " << std::endl;
     printing(root);
 }
