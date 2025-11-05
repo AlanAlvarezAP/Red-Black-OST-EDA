@@ -33,6 +33,9 @@ public:
 	void RotacionDer(Node* raiz);
 	void ActualizarMetadata(Node* raiz);
 	Node* Select(Node* raiz,int smallest_key);
+	void Transplant(Node* node_1, Node* node_2);
+	void DeleteFix(Node* raiz);
+	Node* Delete(const char* str);
 	void printing(Node* raiz,int nivel = 0);
 	void preprinting();
 };

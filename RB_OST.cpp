@@ -148,19 +148,44 @@ void RB_OST::AjustarForma(Node* raiz) {
 }
 
 void RB_OST::Insert(const char* noticia, uint64_t moment) {
+    Node* encontro = Delete(noticia);
     Node** raiz = &root;
     Node* prev_parent = nil;
-    while ((*raiz) != nil) {
-        prev_parent = *raiz;
-        raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
+    if (!encontro) {
+        
+        while ((*raiz) != nil) {
+            prev_parent = *raiz;
+            raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
+        }
+        *raiz = new Node(noticia, moment, 1, moment, nil, nil, prev_parent);
+        hash.insert_hash(*raiz);
+        AjustarForma(*raiz);
+        for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
+            ActualizarMetadata(tmp);
+        }
+        root->color = 0;
     }
-    *raiz = new Node(noticia,moment, 1, moment, nil, nil, prev_parent);
-    AjustarForma(*raiz);
-    for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
-        ActualizarMetadata(tmp);
+    else {
+        encontro->momentos.push_back(moment);
+        encontro->max_moment_subtree = moment;
+        encontro->size = 1;
+        encontro->color = 1;
+        encontro->left = encontro->right = nil;
+        // Falta actualizar la frecuencia para la ventana
+        encontro->frecuencia++;
+        encontro->frecuencia_ventana++;
+        while ((*raiz) != nil) {
+            prev_parent = *raiz;
+            raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
+        }
+        encontro->parent = prev_parent;
+        *raiz = encontro;
+        AjustarForma(*raiz);
+        for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
+            ActualizarMetadata(tmp);
+        }
+        root->color = 0;
     }
-    //hash.insert_hash(*raiz); FALTA EL DELETE :(
-    root->color = 0;
 }
 
 Node* RB_OST::Select(Node* raiz,int smallest_key) {
@@ -169,11 +194,131 @@ Node* RB_OST::Select(Node* raiz,int smallest_key) {
         return raiz;
     }
     else if (smallest_key < r) {
-        Select(raiz->left, smallest_key);
+        return Select(raiz->left, smallest_key);
     }
     else {
-        Select(raiz->right, smallest_key-r);
+        return Select(raiz->right, smallest_key-r);
     }
+}
+
+void RB_OST::Transplant(Node* node_1, Node* node_2) {
+    if (node_1->parent == nil) {
+        root = node_2;
+    }
+    else if (node_1 == node_1->parent->left) {
+        node_1->parent->left = node_2;
+    }
+    else {
+        node_1->parent->right = node_2;
+    }
+    node_2->parent = node_1->parent;
+}
+
+void RB_OST::DeleteFix(Node* raiz) {
+    while (raiz != root && !raiz->color) {
+        if (raiz == raiz->parent->left) {
+            Node* sibling = raiz->parent->right;
+            if (sibling->color) {
+                sibling->color = 0;
+                raiz->parent->color = 1;
+                RotacionIzq(raiz->parent);
+                sibling = raiz->parent->right;
+            }
+            if (!sibling->left->color && !sibling->right->color) {
+                sibling->color = 1;
+                raiz = raiz->parent;
+            }
+            else {
+                if (!sibling->right->color) {
+                    sibling->left->color = 0;
+                    sibling->color = 1;
+                    RotacionDer(sibling);
+                    sibling = raiz->parent->right;
+                }
+                sibling->color = raiz->parent->color;
+                raiz->parent->color = 0;
+                sibling->right->color = 0;
+                RotacionIzq(raiz->parent);
+                raiz = root;
+            }
+        }
+        else {
+            Node* sibling = raiz->parent->left;
+            if (sibling->color) {
+                sibling->color = 0;
+                raiz->parent->color = 1;
+                RotacionDer(raiz->parent);
+                sibling = raiz->parent->left;
+            }
+            if (!sibling->right->color && !sibling->left->color) {
+                sibling->color = 1;
+                raiz = raiz->parent;
+            }
+            else {
+                if (!sibling->left->color) {
+                    sibling->right->color = 0;
+                    sibling->color = 1;
+                    RotacionIzq(sibling);
+                    sibling = raiz->parent->left;
+                }
+                sibling->color = raiz->parent->color;
+                raiz->parent->color = 0;
+                sibling->left->color = 0;
+                RotacionDer(raiz->parent);
+                raiz = root;
+            }
+        }
+        
+    }
+    raiz->color = 0;
+}
+
+Node* RB_OST::Delete(const char* str) {
+    HashNode* find = hash[str];
+    if (!find) {
+        std::cout << " No se encontro el nodo :( en la hash" << std::endl;
+        return nullptr;
+    }
+    Node* replacing_node_z = find->value;
+    Node* replacing_node_y = replacing_node_z;
+    Node* replacing_node_x;
+    bool replacing_node_color_y = replacing_node_y->color;
+    if (replacing_node_z->left == nil) {
+        replacing_node_x = replacing_node_z->right;
+        Transplant(replacing_node_z, replacing_node_x);
+    }
+    else if (replacing_node_z->right == nil) {
+        replacing_node_x = replacing_node_z->left;
+        Transplant(replacing_node_z, replacing_node_x);
+    }
+    else {
+        replacing_node_y = Select(replacing_node_z->right, 1);
+        replacing_node_color_y = replacing_node_y->color;
+        replacing_node_x = replacing_node_y->right;
+        if (replacing_node_y->parent == replacing_node_z) {
+            replacing_node_x->parent = replacing_node_y;
+        }
+        else {
+            Transplant(replacing_node_y, replacing_node_x);
+            replacing_node_y->right = replacing_node_z->right;
+            replacing_node_y->right->parent = replacing_node_y;
+        }
+        Transplant(replacing_node_z, replacing_node_y);
+        replacing_node_y->left = replacing_node_z->left;
+        replacing_node_y->left->parent = replacing_node_y;
+        replacing_node_y->color = replacing_node_z->color;
+
+        ActualizarMetadata(replacing_node_y);
+    }
+    if (!replacing_node_color_y) {
+        DeleteFix(replacing_node_x);
+    }
+    Node* tmp = replacing_node_x->parent;
+    while (tmp != nil) {
+        ActualizarMetadata(tmp);
+        tmp = tmp->parent;
+    }
+    return replacing_node_z;
 }
 
 void RB_OST::printing(Node* raiz, int nivel) {
@@ -183,7 +328,7 @@ void RB_OST::printing(Node* raiz, int nivel) {
     for (int i = 0; i < nivel; ++i) {
         std::cout << "    ";
     }
-    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << *(raiz->momentos.last_elem()) << " " << raiz->max_moment_subtree << std::endl;
+    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << *(raiz->momentos.last_elem()) << " " << raiz->max_moment_subtree << " "  << raiz->topico << std::endl;
 
     printing(raiz->left, nivel + 1);
     printing(raiz->right, nivel + 1);
@@ -191,6 +336,6 @@ void RB_OST::printing(Node* raiz, int nivel) {
 
 void RB_OST::preprinting() {
     std::cout << "Datos desde la raiz" << std::endl;
-    std::cout << "color | size | momentos | max_moment " << std::endl;
+    std::cout << "color | size | momentos | max_moment | noticia " << std::endl;
     printing(root);
 }

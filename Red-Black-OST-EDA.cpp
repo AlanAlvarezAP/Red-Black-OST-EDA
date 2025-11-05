@@ -26,6 +26,8 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
+    
+    // TEST PARA PREPROCESADO
     /*Preprocesador prepo("stop_words.txt");
     std::cout << " Bienvenido al proyecto de EDA RB-OST" << std::endl;
     auto archivos = leer_archivos_carpeta("EDA input");
@@ -41,6 +43,7 @@ int main()
     }*/
     RB_OST arbol;
 
+    // TEST PARA EL ARBOL
     const char* noticias[] = {
         "Noticia A", "Noticia B", "Noticia C", "Noticia D",
         "Noticia E", "Noticia F", "Noticia G", "Noticia H",
@@ -50,27 +53,44 @@ int main()
         "Noticia U", "Noticia V", "Noticia W", "Noticia X",
         "Noticia Y"
     };
-    uint64_t momentos[] = {
-        50, 10, 70, 20, 30, 90, 60, 40, 80, 100,
-        25, 35, 55, 65, 75, 85, 15, 95, 5, 45,
-        105, 110, 115, 120, 125
-    };
+
+    uint64_t momentos[25];
+    for (int i = 0; i < 25; ++i) {
+        momentos[i] = i + 1; // 1, 2, 3, ...
+    }
 
     int total = 25;
 
     for (int i = 0; i < total; ++i) {
+        std::cout << "=== Insertando nodo " << i + 1 << " | Noticia: " << noticias[i] << " | Momento: " << momentos[i] << " ===" << std::endl;
         arbol.Insert(noticias[i], momentos[i]);
-
-        std::cout << "Despues de insertar nodo " << i + 1 << " con noticia " << noticias[i] << " y momento " << momentos[i] << ":" << std::endl;
         arbol.preprinting();
         std::cout << "--------------------------------------" << std::endl;
     }
 
-    std::cout << "Arbol final tras 25 inserciones" << std::endl;
+    // Reinserciones, continuando la secuencia de momentos
+    uint64_t nuevos_momentos[10];
+    for (int i = 0; i < 10; ++i) {
+        nuevos_momentos[i] = total + i + 1; // 26, 27, 28, ...
+    }
+
+    for (int i = 0; i < 10; ++i) {
+        std::cout << "=== Reinsercion nodo " << i + 1 << " | Noticia: " << noticias[i] << " | Nuevo Momento: " << nuevos_momentos[i] << " ===" << std::endl;
+        arbol.Insert(noticias[i], nuevos_momentos[i]);
+        arbol.preprinting();
+        std::cout << "--------------------------------------" << std::endl;
+    }
+
+    Node* primero = arbol.Select(arbol.root, 1);
+    if (primero) {
+        std::cout << "Primer nodo en orden (Select 1): " << primero->topico << " | Ultimo momento: " << *(primero->momentos.last_elem()) << std::endl;
+    }
+
+    std::cout << "=== Arbol final tras inserciones y reinserciones ===" << std::endl;
     arbol.preprinting();
 
-    std::cout << *((arbol.Select(arbol.root, 1))->momentos.last_elem());
 
+    // TEST PARA LA HASH MAP
     /*UnorderedHash map;
 
     Node* n1 = new Node("hola", 1, false, 1, nullptr, nullptr, nullptr);
