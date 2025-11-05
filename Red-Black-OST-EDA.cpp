@@ -39,69 +39,59 @@ int main()
         prepo.Conteo();
         prepo.print();
     }*/
-    RB_OST arbol;
+    /*RB_OST arbol;
 
-    const char* noticias[][3] = {
-        {"Noticia A1", "Noticia A2", "Noticia A3"},
-        {"Noticia B1", "Noticia B2", "Noticia B3"},
-        {"Noticia C1", "Noticia C2", "Noticia C3"},
-        {"Noticia D1", "Noticia D2", "Noticia D3"},
-        {"Noticia E1", "Noticia E2", "Noticia E3"},
-        {"Noticia F1", "Noticia F2", "Noticia F3"},
-        {"Noticia G1", "Noticia G2", "Noticia G3"},
-        {"Noticia H1", "Noticia H2", "Noticia H3"},
-        {"Noticia I1", "Noticia I2", "Noticia I3"},
-        {"Noticia J1", "Noticia J2", "Noticia J3"},
-        {"Noticia K1", "Noticia K2", "Noticia K3"},
-        {"Noticia L1", "Noticia L2", "Noticia L3"},
-        {"Noticia M1", "Noticia M2", "Noticia M3"},
-        {"Noticia N1", "Noticia N2", "Noticia N3"},
-        {"Noticia O1", "Noticia O2", "Noticia O3"},
-        {"Noticia P1", "Noticia P2", "Noticia P3"},
-        {"Noticia Q1", "Noticia Q2", "Noticia Q3"},
-        {"Noticia R1", "Noticia R2", "Noticia R3"},
-        {"Noticia S1", "Noticia S2", "Noticia S3"},
-        {"Noticia T1", "Noticia T2", "Noticia T3"}
+    const char* noticias[] = {
+        "Noticia A", "Noticia B", "Noticia C", "Noticia D",
+        "Noticia E", "Noticia F", "Noticia G", "Noticia H",
+        "Noticia I", "Noticia J", "Noticia K", "Noticia L",
+        "Noticia M", "Noticia N", "Noticia O", "Noticia P",
+        "Noticia Q", "Noticia R", "Noticia S", "Noticia T",
+        "Noticia U", "Noticia V", "Noticia W", "Noticia X",
+        "Noticia Y"
+    };
+    uint64_t momentos[] = {
+        50, 10, 70, 20, 30, 90, 60, 40, 80, 100,
+        25, 35, 55, 65, 75, 85, 15, 95, 5, 45,
+        105, 110, 115, 120, 125
     };
 
-    uint64_t momentos_sets[][10] = {
-        {5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
-        {100, 90, 80, 70, 60, 50, 40, 30, 20, 10},
-        {50, 20, 70, 10, 30, 60, 80, 25, 65, 85},
-        {100, 105, 102, 110, 108, 107, 120, 125, 123, 122},
-        {10, 1000, 500, 1500, 250, 750, 1250, 1750, 50, 2000}
-    };
+    int total = 25;
 
-    int total_sets = 5;
-    int noticias_usadas = 0;
+    for (int i = 0; i < total; ++i) {
+        arbol.Insert(noticias[i], momentos[i]);
 
-    for (int s = 0; s < total_sets; ++s) {
-        std::cout << "\n==============================\n";
-        std::cout << " Conjunto " << s + 1 << " de inserciones\n";
-        std::cout << "==============================\n";
-
-        for (int i = 0; i < 10; ++i) {
-            MiArray<const char*> arr;
-            for (int j = 0; j < 3; ++j) {
-                arr.push_back(noticias[noticias_usadas % 20][j]);
-            }
-
-            uint64_t momento = momentos_sets[s][i];
-            if (s == 4) {
-                std::cout << "Esperando" << std::endl;
-            }
-            arbol.Insert(arr, momento);
-
-            std::cout << "\n Insertando momento " << momento << "...\n";
-            arbol.preprinting();
-            noticias_usadas++;
-        }
-
-        std::cout << "\n Árbol final del conjunto " << s + 1 << ":\n";
+        std::cout << "Despues de insertar nodo " << i + 1 << " con noticia " << noticias[i] << " y momento " << momentos[i] << ":" << std::endl;
         arbol.preprinting();
-        std::cout << "------------------------------------------\n";
-
-        // Reiniciar el árbol para el siguiente conjunto
-        arbol = RB_OST();
+        std::cout << "--------------------------------------" << std::endl;
     }
+
+    std::cout << "Arbol final tras 25 inserciones" << std::endl;
+    arbol.preprinting();*/
+    UnorderedHash map;
+
+    Node* n1 = new Node("hola", 1, false, 1, nullptr, nullptr, nullptr);
+    Node* n2 = new Node("mundo", 2, false, 2, nullptr, nullptr, nullptr);
+    Node* n3 = new Node("adios", 3, true, 3, nullptr, nullptr, nullptr);
+    Node* n4 = new Node("hola", 4, true, 4, nullptr, nullptr, nullptr);
+
+    map.insert_hash(n1);
+    map.insert_hash(n2);
+    map.insert_hash(n3);
+
+    if (map["hola"]) std::cout << "hola -> " << map["hola"]->value->topico << std::endl;
+    if (map["mundo"]) std::cout << "mundo -> " << map["mundo"]->value->topico << std::endl;
+    if (map["adios"]) std::cout << "adios -> " << map["adios"]->value->topico << std::endl;
+
+    map.insert_hash(n4);
+    if (map["hola"]) std::cout << "hola (despues de reemplazo) -> " << map["hola"]->value->topico << std::endl;
+    if (!map["test"]) std::cout << "'test' no existe en el hash map\n";
+
+    map.print();
+
+    delete n1;
+    delete n2;
+    delete n3;
+    delete n4;
+    return 0;
 }

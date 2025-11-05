@@ -1,17 +1,29 @@
 #include "RB_OST.h"
 
-Node::Node(uint64_t mome,bool col,uint64_t max_moment, Node* l, Node* r, Node* p, int siz) {
+Node::Node(const char* noti,uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p, int siz) {
 	color = col;
 	left = l;
 	right = r;
 	parent = p;
 	max_moment_subtree = max_moment;
-	momentos = mome;
+	momentos.push_back(mome);
 	size = siz;
+    int len = 0;
+    const char* tmp = noti;
+    while (*tmp != '\0') {
+        len++;
+        tmp++;
+    }
+    topico = new char[len + 1];
+    tmp = noti;
+    for (int i = 0; i < len; i++) {
+        topico[i] = tmp[i];
+    }
+    topico[len] = '\0';
 }
 
 RB_OST::RB_OST() {
-	nil = new Node(0,0,0,nullptr,nullptr,nullptr,0);
+	nil = new Node("",0, 0, 0, nullptr, nullptr, nullptr, 0);
     nil->left = nil;
     nil->right = nil;
     nil->parent = nil;
@@ -25,7 +37,7 @@ void RB_OST::ActualizarMetadata(Node* raiz) {
     }
     
     raiz->size = 1 + raiz->left->size + raiz->right->size;
-    raiz->max_moment_subtree = raiz->momentos;
+    raiz->max_moment_subtree = *(raiz->momentos.last_elem());
     if (raiz->max_moment_subtree < raiz->left->max_moment_subtree) {
         raiz->max_moment_subtree = raiz->left->max_moment_subtree;
     }
@@ -134,16 +146,15 @@ void RB_OST::AjustarForma(Node* raiz) {
     root->color = 0;
 }
 
-void RB_OST::Insert(MiArray<const char*> noticia, uint64_t moment) {
+void RB_OST::Insert(const char* noticia, uint64_t moment) {
     Node** raiz = &root;
     Node* prev_parent = nil;
     preprinting();
     while ((*raiz) != nil) {
         prev_parent = *raiz;
-        raiz = (moment < (*raiz)->momentos) ? &((*raiz)->left) : &((*raiz)->right);
+        raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
     }
-    *raiz = new Node(moment, 1, moment, nil, nil, prev_parent);
-    (*raiz)->topicos = noticia;
+    *raiz = new Node(noticia,moment, 1, moment, nil, nil, prev_parent);
     AjustarForma(*raiz);
     for (Node* tmp = (*raiz)->parent;tmp != nil;tmp = tmp->parent) {
         ActualizarMetadata(tmp);
@@ -158,7 +169,7 @@ void RB_OST::printing(Node* raiz, int nivel) {
     for (int i = 0; i < nivel; ++i) {
         std::cout << "    ";
     }
-    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << raiz->momentos << " " << raiz->max_moment_subtree << std::endl;
+    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << *(raiz->momentos.last_elem()) << " " << raiz->max_moment_subtree << std::endl;
 
     printing(raiz->left, nivel + 1);
     printing(raiz->right, nivel + 1);

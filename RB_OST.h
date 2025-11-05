@@ -2,19 +2,20 @@
 #include <iostream>
 #include <vector>
 #include "EstructurasAuxiliares.h"
+#include "MiArray.h"
 
 class Node {
 public:
-	MiArray<const char*> topicos;
+	char* topico;
 	bool color;
 	int size;
-	uint64_t momentos;
+	MiArray<uint64_t> momentos;
 	Node* left;
 	Node* right;
 	Node* parent;
 	uint64_t max_moment_subtree;
 
-	Node(uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p , int siz = 1);
+	Node(const char* noti, uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p , int siz = 1);
 
 };
 
@@ -23,7 +24,7 @@ class RB_OST {
 	Node* nil;
 public:
 	RB_OST();
-	void Insert(MiArray<const char*> noticia, uint64_t moment);
+	void Insert(const char* noticia, uint64_t moment);
 	void AjustarForma(Node* raiz);
 	void RotacionIzq(Node* raiz);
 	void RotacionDer(Node* raiz);
