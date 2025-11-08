@@ -15,7 +15,6 @@ Preprocesador::Preprocesador(const std::string& stop) {
 }
 
 
-// Posible mejora toda función con to... puede dar error si hay tildes seria static_cast<unsigned char> en ese caso preguntar
 void Preprocesador::Limpieza(const std::string& texto) {
 	std::string lineas;
 	lector.open(texto);

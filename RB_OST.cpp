@@ -1,5 +1,16 @@
 #include "RB_OST.h"
 
+void escribir_top_csv(MiArray<Topk> window) {
+    std::ofstream escritor("topk.csv");
+
+    for (int i = 0; i < window.get_size(); i++) {
+        escritor << window[i].nodo->topico << "," << window[i].freq << std::endl;
+    }
+
+    escritor.close();
+}
+
+
 Node::Node(const char* noti,uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p, int siz) {
 	color = col;
 	left = l;
@@ -147,12 +158,106 @@ void RB_OST::AjustarForma(Node* raiz) {
     root->color = 0;
 }
 
-void RB_OST::Insert(const char* noticia, uint64_t moment) {
+void RB_OST::AumentarTop(MiArray<Topk>& top, Node* nodo, int freq, int m_factor) {
+    int pos = 0;
+    while (pos < top.get_size() && top[pos].freq > freq) {
+        pos++;
+    }
+    Topk to_insert{ nodo,freq };
+    if (pos < m_factor) {
+        if (top.get_size() < m_factor) {
+            top.push_back(to_insert);
+        }
+        for (int i = top.get_size() - 2; i >= pos;i--) {
+            top[i + 1] = top[i];
+        }
+        top[pos] = to_insert;
+    }
+
+}
+
+void RB_OST::GetWindow(Node* raiz, int start_moment, int end_moment, MiArray<Topk>& arr,int m_factor) {
+    if (start_moment > end_moment) {
+        std::cout << "Ventana invalida" << std::endl;
+        return;
+    }
+    if (raiz == nil) {
+        return;
+    }
+    if (raiz->max_moment_subtree < start_moment) {
+        return;
+    }
+
+    int count = 0;
+    for (int i = raiz->momentos.get_size() - 1;i >= 0;i--) {
+        uint64_t amount_moments = raiz->momentos[i];
+        if (amount_moments >= start_moment && amount_moments <= end_moment) {
+            count++;
+        }
+        else {
+            break;
+        }
+    }
+
+    if (count > 0) {
+        raiz->frecuencia_ventana = count;
+        AumentarTop(arr, raiz, count,m_factor);
+    }
+
+    if (raiz->left != nil) {
+        GetWindow(raiz->left, start_moment, end_moment, arr,m_factor);
+    }
+    if (raiz->right != nil && raiz->right->max_moment_subtree >= start_moment){
+        GetWindow(raiz->right, start_moment, end_moment, arr,m_factor);
+    }
+}
+void RB_OST::GetWindowLastK(Node* raiz, int start_moment, int end_moment, MiArray<Topk>& arr, int k_factor, int m_factor) {
+    if (raiz == nil || k_factor <= 0) {
+        std::cout << "Ventana K invalida o raiz nula" << std::endl;
+        return;
+    }
+    Node* nodo = raiz;
+    int count = 0;
+    
+    while (nodo != nil && count < k_factor) {
+        
+        int count_2 = 0;
+        for (int i = nodo->momentos.get_size() - 1; i >= 0;i--) {
+            uint64_t amount_moments = nodo->momentos[i];
+            if (amount_moments >= start_moment && amount_moments <= end_moment) {
+                count_2++;
+            }
+            else {
+                break;
+            }
+        }
+        if (count_2 > 0) {
+            nodo->frecuencia_ventana = count_2;
+            AumentarTop(arr, nodo, count_2, m_factor);
+            count++;
+        }
+        if (nodo->right != nil) {
+            nodo = nodo->right;
+            while (nodo->left != nil) {
+                nodo = nodo->left;
+            }
+        }
+        else {
+            Node* p = nodo->parent;
+            while (p != nil && nodo == p->right) {
+                nodo = p;
+                p = p->parent;
+            }
+            nodo = p;
+        }
+    }
+}
+
+void RB_OST::Insert(const char* noticia, uint64_t moment,int k_factor,int m_factor,int start_moment,int end_moment,bool ultimos_k) {
     Node* encontro = Delete(noticia);
     Node** raiz = &root;
     Node* prev_parent = nil;
     if (!encontro) {
-        
         while ((*raiz) != nil) {
             prev_parent = *raiz;
             raiz = (moment < *((*raiz)->momentos.last_elem())) ? &((*raiz)->left) : &((*raiz)->right);
@@ -171,7 +276,6 @@ void RB_OST::Insert(const char* noticia, uint64_t moment) {
         encontro->size = 1;
         encontro->color = 1;
         encontro->left = encontro->right = nil;
-        // Falta actualizar la frecuencia para la ventana
         encontro->frecuencia++;
         encontro->frecuencia_ventana++;
         while ((*raiz) != nil) {
@@ -186,9 +290,32 @@ void RB_OST::Insert(const char* noticia, uint64_t moment) {
         }
         root->color = 0;
     }
+    MiArray<Topk> window;
+    
+    if (ultimos_k) {
+        if (k_factor > root->size) {
+            k_factor = root->size;
+        }
+        int rank = root->size - k_factor+1;
+        if (rank <= 0) {
+            rank = 1;
+        }
+        Node* raiz_ultimos = Select(root, rank);
+        GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor, m_factor);
+    }
+    else {
+        GetWindow(root, start_moment, end_moment, window,m_factor);
+    }
+    /*std::cout << "Top-" << m_factor << " en ventana: ";
+    for (int j = 0; j < window.get_size(); j++) {
+        std::cout << "(" << window[j].nodo->topico << " " << window[j].freq << ") ";
+    }
+    std::cout << std::endl;*/
+    escribir_top_csv(window);
 }
 
 Node* RB_OST::Select(Node* raiz,int smallest_key) {
+ 
     int r = raiz->left->size + 1;
     if (smallest_key == r) {
         return raiz;
@@ -276,7 +403,7 @@ void RB_OST::DeleteFix(Node* raiz) {
 Node* RB_OST::Delete(const char* str) {
     HashNode* find = hash[str];
     if (!find) {
-        std::cout << " No se encontro el nodo :( en la hash" << std::endl;
+        //std::cout << " No se encontro el nodo :( en la hash" << std::endl;
         return nullptr;
     }
     Node* replacing_node_z = find->value;

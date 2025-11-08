@@ -1,10 +1,10 @@
 #pragma once
 template <typename T>
 class MiArray {
+public:
 	T* arr;
 	int size;
 	int capacity;
-public:
 	MiArray() :capacity(4), size(0) {
 		arr = new T[capacity];
 	}

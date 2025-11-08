@@ -15,8 +15,8 @@ class Preprocesador {
 	std::vector<std::string> tokens;
 	std::ifstream lector;
 	std::regex regex;
-	std::vector<std::string> topics;
 public:
+	std::vector<std::string> topics;
 	Preprocesador(const std::string& stop);
 	void Limpieza(const std::string& texto);
 	void Tokenizar();
