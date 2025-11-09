@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <fstream>
 #include "EstructurasAuxiliares.h"
 #include "MiArray.h"
 
