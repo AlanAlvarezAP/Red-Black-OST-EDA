@@ -65,6 +65,7 @@ void Preprocesador::Stop_words() {
 		}
 	}
 	tokens = std::move(tokens_noStop);
+	
 }
 
 void Preprocesador::Porter_Stemming() {
@@ -77,7 +78,9 @@ void Preprocesador::Porter_Stemming() {
 		port.paso_4();
 		port.paso_5_a_b();
 		tokens[i] = port.copy_of_original;
+
 	}
+	
 }
 
 std::vector<std::string> Preprocesador::generar_ngrams(const std::vector<std::string>& tokens, int n) {
@@ -105,58 +108,18 @@ void Preprocesador::Conteo() {
 		conteo_unigram[p]++;
 	}
 
-	for (const auto& bigram : generar_ngrams(tokens, 2)) {
-		conteo_bigrams[bigram]++;
-	}
-
-	for (const auto& trigram : generar_ngrams(tokens, 3)) {
-		conteo_trigrams[trigram]++;
-	}
-
 	int max_freq = INT_MIN;
 	for (auto& p : conteo_unigram) {
 		if (p.second > max_freq) {
 			max_freq = p.second;
 		}
 	}
-	for (auto& p : conteo_bigrams) {
-		if (p.second > max_freq) {
-			max_freq = p.second;
-		}
-	}
-	for (auto& p : conteo_trigrams) {
-		if (p.second > max_freq) {
-			max_freq = p.second;
-		}
-	}
-
 
 	int max_empate=0;
-	for (auto& p : conteo_trigrams) {
-		if (max_freq == p.second) {
-			topics.push_back(p.first);
-			max_empate++;
-			if (max_empate >= 3) {
-				return;
-			}
-		}
-	}
-	for (auto& p : conteo_bigrams) {
-		if (max_freq == p.second) {
-			topics.push_back(p.first);
-			max_empate++;
-			if (max_empate >= 3) {
-				return;
-			}
-		}
-	}
 	for (auto& p : conteo_unigram) {
 		if (max_freq == p.second) {
 			topics.push_back(p.first);
 			max_empate++;
-			if (max_empate >= 3) {
-				return;
-			}
 		}
 	}
 }

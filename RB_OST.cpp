@@ -1,16 +1,5 @@
 #include "RB_OST.h"
 
-void escribir_top_csv(MiArray<Topk> window) {
-    std::ofstream escritor("topk.csv");
-
-    for (int i = 0; i < window.get_size(); i++) {
-        escritor << window[i].nodo->topico << "," << window[i].freq << std::endl;
-    }
-
-    escritor.close();
-}
-
-
 Node::Node(const char* noti,uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p, int siz) {
 	color = col;
 	left = l;
@@ -191,11 +180,11 @@ void RB_OST::GetWindow(Node* raiz, int start_moment, int end_moment, MiArray<Top
     int count = 0;
     for (int i = raiz->momentos.get_size() - 1;i >= 0;i--) {
         uint64_t amount_moments = raiz->momentos[i];
-        if (amount_moments >= start_moment && amount_moments <= end_moment) {
-            count++;
-        }
-        else {
+        if (amount_moments < start_moment) {
             break;
+        }
+        if (amount_moments <= end_moment) {
+            count++;
         }
     }
 
@@ -224,11 +213,11 @@ void RB_OST::GetWindowLastK(Node* raiz, int start_moment, int end_moment, MiArra
         int count_2 = 0;
         for (int i = nodo->momentos.get_size() - 1; i >= 0;i--) {
             uint64_t amount_moments = nodo->momentos[i];
-            if (amount_moments >= start_moment && amount_moments <= end_moment) {
-                count_2++;
-            }
-            else {
+            if (amount_moments < start_moment) {
                 break;
+            }
+            if (amount_moments <= end_moment) {
+                count_2++;
             }
         }
         if (count_2 > 0) {
@@ -290,28 +279,7 @@ void RB_OST::Insert(const char* noticia, uint64_t moment,int k_factor,int m_fact
         }
         root->color = 0;
     }
-    MiArray<Topk> window;
-    
-    if (ultimos_k) {
-        if (k_factor > root->size) {
-            k_factor = root->size;
-        }
-        int rank = root->size - k_factor+1;
-        if (rank <= 0) {
-            rank = 1;
-        }
-        Node* raiz_ultimos = Select(root, rank);
-        GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor, m_factor);
-    }
-    else {
-        GetWindow(root, start_moment, end_moment, window,m_factor);
-    }
-    /*std::cout << "Top-" << m_factor << " en ventana: ";
-    for (int j = 0; j < window.get_size(); j++) {
-        std::cout << "(" << window[j].nodo->topico << " " << window[j].freq << ") ";
-    }
-    std::cout << std::endl;*/
-    escribir_top_csv(window);
+
 }
 
 Node* RB_OST::Select(Node* raiz,int smallest_key) {
@@ -455,7 +423,7 @@ void RB_OST::printing(Node* raiz, int nivel) {
     for (int i = 0; i < nivel; ++i) {
         std::cout << "    ";
     }
-    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << *(raiz->momentos.last_elem()) << " " << raiz->max_moment_subtree << " "  << raiz->topico << std::endl;
+    std::cout << (raiz->color ? "R " : "B ") << raiz->size << " " << *(raiz->momentos.last_elem()) << " " << raiz->max_moment_subtree << " "  << raiz->topico << " " << raiz->frecuencia << std::endl;
 
     printing(raiz->left, nivel + 1);
     printing(raiz->right, nivel + 1);
@@ -463,6 +431,6 @@ void RB_OST::printing(Node* raiz, int nivel) {
 
 void RB_OST::preprinting() {
     std::cout << "Datos desde la raiz" << std::endl;
-    std::cout << "color | size | momentos | max_moment | noticia " << std::endl;
+    std::cout << "color | size | momentos | max_moment | noticia | freq " << std::endl;
     printing(root);
 }

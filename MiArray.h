@@ -54,6 +54,7 @@ public:
 	}
 	T& operator[](int index) {
 		if (index >= size) {
+			std::cout << " FUERA DE RANGO CON " << index << " - " << size <<  std::endl;
 			throw std::out_of_range("Mi array fuera de rango");
 		}
 		return arr[index];
