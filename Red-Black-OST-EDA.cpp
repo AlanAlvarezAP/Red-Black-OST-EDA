@@ -165,20 +165,21 @@ int main()
         if (al_final == 'n') {
             MiArray<Topk> window;
             if (ultimos_k) {
-                start_moment = momento_global - k_factor + 1;
+                int k_factor_cambiable = k_factor;
+                start_moment = momento_global - k_factor_cambiable + 1;
                 if (start_moment < 0) {
                     start_moment = 0;
                 }
                 end_moment = momento_global;
-                if (k_factor > arbol.root->size) {
-                    k_factor = arbol.root->size;
+                if (k_factor_cambiable > arbol.root->size) {
+                    k_factor_cambiable = arbol.root->size;
                 }
-                int rank = arbol.root->size - k_factor + 1;
+                int rank = arbol.root->size - k_factor_cambiable + 1;
                 if (rank <= 0) {
                     rank = 1;
                 }
                 Node* raiz_ultimos = arbol.Select(arbol.root, rank);
-                arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor, m_factor);
+                arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor_cambiable, m_factor);
             }
             else {
                 arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
@@ -197,28 +198,26 @@ int main()
     MiArray<Topk> window;
     double duracion_query = 0;
     if (ultimos_k) {
-        start_moment = momento_global - k_factor + 1;
+        int k_factor_cambiable = k_factor;
+        start_moment = momento_global - k_factor_cambiable + 1;
         if (start_moment < 0) {
             start_moment = 0;
         }
         end_moment = momento_global;
-        if (k_factor > arbol.root->size) {
-            k_factor = arbol.root->size;
+        if (k_factor_cambiable > arbol.root->size) {
+            k_factor_cambiable = arbol.root->size;
         }
-        int rank = arbol.root->size - k_factor + 1;
+        int rank = arbol.root->size - k_factor_cambiable + 1;
         if (rank <= 0) {
             rank = 1;
         }
         Node* raiz_ultimos = arbol.Select(arbol.root, rank);
         auto t5 = std::chrono::high_resolution_clock::now();
-        arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor, m_factor);
+        arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor_cambiable, m_factor);
         auto t6 = std::chrono::high_resolution_clock::now();
         duracion_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
     }
     else {
-        if (k_factor > arbol.root->size) {
-            k_factor = arbol.root->size;
-        }
         arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
     }
     auto fin_general = std::chrono::high_resolution_clock::now();
