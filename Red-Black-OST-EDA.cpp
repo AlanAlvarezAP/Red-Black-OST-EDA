@@ -54,9 +54,10 @@ int main()
     RB_OST arbol;
     char tipo_query;
     char continuo;
+    char al_final;
     bool se_mantenga=false;
     std::cout << " Bienvenido al proyecto de EDA ||| RB-OST para Streaming continuo |||" << std::endl;
-    uint64_t momento_global = 0;
+    uint64_t momento_global = 1;
     auto archivos = leer_archivos_carpeta("EDA input");
     int k_factor=0;
     int m_factor=0;
@@ -65,14 +66,39 @@ int main()
     bool ultimos_k=false;
     int total_topics=0;
     double duracion=0;
-    for (const auto& f : archivos) {
+    double tiempo_limpieza_ns = 0;
+    double tiempo_tokenizar_ns = 0;
+    double tiempo_stopwords_ns = 0;
+    double tiempo_stemming_ns = 0;
+    double tiempo_conteo_ns = 0;
+    double insert = 0;
+    double total_general = 0;
+    auto inicio_general = std::chrono::high_resolution_clock::now();
+    for (const auto f : archivos) {
+        auto inicio = std::chrono::high_resolution_clock::now();
         prepo.reset();
+        auto t1 = std::chrono::high_resolution_clock::now();
         prepo.Limpieza(f);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        tiempo_limpieza_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+        auto t11 = std::chrono::high_resolution_clock::now();
         prepo.Tokenizar();
+        auto t21 = std::chrono::high_resolution_clock::now();
+        tiempo_tokenizar_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(t21 - t11).count();
+        auto t12 = std::chrono::high_resolution_clock::now();
         prepo.Stop_words();
+        auto t22 = std::chrono::high_resolution_clock::now();
+        tiempo_stopwords_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(t22 - t12).count();
+        auto t13 = std::chrono::high_resolution_clock::now();
         prepo.Porter_Stemming();
+        auto t23 = std::chrono::high_resolution_clock::now();
+        tiempo_stemming_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(t23 - t13).count();
+        auto t14 = std::chrono::high_resolution_clock::now();
         prepo.Conteo();
-
+        auto t24 = std::chrono::high_resolution_clock::now();
+        tiempo_conteo_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(t24 - t14).count();
+        auto fin = std::chrono::high_resolution_clock::now();
+        duracion += std::chrono::duration_cast<std::chrono::nanoseconds>(fin - inicio).count();
         if (!se_mantenga) {
             reset_top();
             do {
@@ -114,21 +140,36 @@ int main()
             } while (continuo != 's' && continuo != 'n');
 
             se_mantenga = continuo == 's' ? true : false;
+
+
+            if (se_mantenga) {
+                do {
+                    std::cout << "¿Desea que se realice su consulta al final del procesado (S/N)?" << std::endl;
+                    std::cin >> al_final;
+                    al_final = std::tolower(al_final);
+                } while (al_final != 's' && al_final != 'n');
+            }
+            else {
+                al_final = 'n';
+            }
         }
-        start_moment = momento_global - k_factor + 1;
-        if (start_moment < 0) {
-            start_moment = 0;
-        }
-        end_moment = momento_global;
-        auto inicio = std::chrono::high_resolution_clock::now();
+        std::cout << "Sacado de " << momento_global << std::endl;
         for (int i = 0;i < prepo.topics.size();i++) {
-            arbol.Insert(prepo.topics[i].c_str(), momento_global, k_factor, m_factor, start_moment, end_moment, ultimos_k);
-            
-            total_topics += prepo.topics.size();
+            auto t3= std::chrono::high_resolution_clock::now();
+            std::cout << " Se va a insertar " << prepo.topics[i] << std::endl;
+            arbol.Insert(prepo.topics[i].c_str(), momento_global, k_factor, m_factor, ultimos_k);
+            auto t4 = std::chrono::high_resolution_clock::now();
+            insert += std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count();
         }
-        if (!se_mantenga) {
+        total_topics += prepo.topics.size();
+        if (al_final == 'n') {
             MiArray<Topk> window;
             if (ultimos_k) {
+                start_moment = momento_global - k_factor + 1;
+                if (start_moment < 0) {
+                    start_moment = 0;
+                }
+                end_moment = momento_global;
                 if (k_factor > arbol.root->size) {
                     k_factor = arbol.root->size;
                 }
@@ -142,16 +183,25 @@ int main()
             else {
                 arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
             }
+            
+            for (int i = 0;i < window.get_size();i++) {
+                std::cout << "Noticia " << i << " con la noticia " << window[i].nodo->topico << " con la frecuencia historica de " << window[i].nodo->frecuencia << " y en la ventana " << window[i].nodo->frecuencia_ventana << std::endl;
+            }
+            std::cout << "-----------------------------------------------" << std::endl;
             escribir_top_csv(window);
             system("python script_wordcloud.py topk.csv");
         }
         momento_global++;
-        auto fin = std::chrono::high_resolution_clock::now();
-        duracion += std::chrono::duration_cast<std::chrono::milliseconds>(fin - inicio).count();
-        
+
     }
     MiArray<Topk> window;
+    double duracion_query = 0;
     if (ultimos_k) {
+        start_moment = momento_global - k_factor + 1;
+        if (start_moment < 0) {
+            start_moment = 0;
+        }
+        end_moment = momento_global;
         if (k_factor > arbol.root->size) {
             k_factor = arbol.root->size;
         }
@@ -160,7 +210,10 @@ int main()
             rank = 1;
         }
         Node* raiz_ultimos = arbol.Select(arbol.root, rank);
+        auto t5 = std::chrono::high_resolution_clock::now();
         arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor, m_factor);
+        auto t6 = std::chrono::high_resolution_clock::now();
+        duracion_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
     }
     else {
         if (k_factor > arbol.root->size) {
@@ -168,10 +221,23 @@ int main()
         }
         arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
     }
+    auto fin_general = std::chrono::high_resolution_clock::now();
+    auto duracion_general = std::chrono::duration_cast<std::chrono::nanoseconds>(fin_general - inicio_general).count();;
     escribir_top_csv(window);
-    std::cout << "Tiempo que tardo " << std::fixed << duracion << "ns" << std::endl;
     std::cout << "--- Wordcloud generada para esta noticia ---" << std::endl;
     system("python script_wordcloud.py topk.csv");
     arbol.preprinting();
+    /*std::cout << "TIEMPO DE TODO " << std::fixed << duracion_general << "ns" << std::endl;
+    std::cout << "Tiempo de query final " << std::fixed << duracion_query << "ns" << std::endl;
+    std::cout << "Tiempo que tardo insert " << std::fixed << insert << "ns" << std::endl;
+    std::cout << "Tiempo que tardo toda la prepo " << std::fixed << duracion << "ns" << std::endl;
+    std::cout << "Noticias insertadas " << cant_inserts << std::endl;
+    std::cout << "--------------------------------------------\n";
+    std::cout << "Tiempo total LIMPIEZA:        " << std::fixed << tiempo_limpieza_ns << " ns\n";
+    std::cout << "Tiempo total TOKENIZACION:    " << std::fixed << tiempo_tokenizar_ns << " ns\n";
+    std::cout << "Tiempo total STOP WORDS:      " << std::fixed << tiempo_stopwords_ns << " ns\n";
+    std::cout << "Tiempo total STEMMING:        " << std::fixed << tiempo_stemming_ns << " ns\n";
+    std::cout << "Tiempo total CONTEO:          " << std::fixed << tiempo_conteo_ns << " ns\n";
+    std::cout << "--------------------------------------------\n";*/
     return 0;
 }

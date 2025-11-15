@@ -30,7 +30,7 @@ public:
 	UnorderedHash hash;
 
 	RB_OST();
-	void Insert(const char* noticia, uint64_t moment,int k_factor, int m_factor, int start_moment, int end_moment, bool ultimos_k);
+	void Insert(const char* noticia, uint64_t moment,int k_factor, int m_factor, bool ultimos_k);
 	void AjustarForma(Node* raiz);
 	void RotacionIzq(Node* raiz);
 	void RotacionDer(Node* raiz);
