@@ -153,10 +153,8 @@ int main()
                 al_final = 'n';
             }
         }
-        std::cout << "Sacado de " << momento_global << std::endl;
         for (int i = 0;i < prepo.topics.size();i++) {
-            auto t3= std::chrono::high_resolution_clock::now();
-            std::cout << " Se va a insertar " << prepo.topics[i] << std::endl;
+            auto t3 = std::chrono::high_resolution_clock::now();
             arbol.Insert(prepo.topics[i].c_str(), momento_global, k_factor, m_factor, ultimos_k);
             auto t4 = std::chrono::high_resolution_clock::now();
             insert += std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count();
@@ -184,17 +182,13 @@ int main()
             else {
                 arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
             }
-            
-            for (int i = 0;i < window.get_size();i++) {
-                std::cout << "Noticia " << i << " con la noticia " << window[i].nodo->topico << " con la frecuencia historica de " << window[i].nodo->frecuencia << " y en la ventana " << window[i].nodo->frecuencia_ventana << std::endl;
-            }
-            std::cout << "-----------------------------------------------" << std::endl;
             escribir_top_csv(window);
             system("python script_wordcloud.py topk.csv");
         }
         momento_global++;
 
     }
+    
     MiArray<Topk> window;
     double duracion_query = 0;
     if (ultimos_k) {
@@ -226,17 +220,16 @@ int main()
     std::cout << "--- Wordcloud generada para esta noticia ---" << std::endl;
     system("python script_wordcloud.py topk.csv");
     arbol.preprinting();
-    /*std::cout << "TIEMPO DE TODO " << std::fixed << duracion_general << "ns" << std::endl;
+    std::cout << "TIEMPO DE TODO " << std::fixed << duracion_general << "ns" << std::endl;
     std::cout << "Tiempo de query final " << std::fixed << duracion_query << "ns" << std::endl;
     std::cout << "Tiempo que tardo insert " << std::fixed << insert << "ns" << std::endl;
     std::cout << "Tiempo que tardo toda la prepo " << std::fixed << duracion << "ns" << std::endl;
-    std::cout << "Noticias insertadas " << cant_inserts << std::endl;
     std::cout << "--------------------------------------------\n";
     std::cout << "Tiempo total LIMPIEZA:        " << std::fixed << tiempo_limpieza_ns << " ns\n";
     std::cout << "Tiempo total TOKENIZACION:    " << std::fixed << tiempo_tokenizar_ns << " ns\n";
     std::cout << "Tiempo total STOP WORDS:      " << std::fixed << tiempo_stopwords_ns << " ns\n";
     std::cout << "Tiempo total STEMMING:        " << std::fixed << tiempo_stemming_ns << " ns\n";
     std::cout << "Tiempo total CONTEO:          " << std::fixed << tiempo_conteo_ns << " ns\n";
-    std::cout << "--------------------------------------------\n";*/
+    std::cout << "--------------------------------------------\n";
     return 0;
 }
