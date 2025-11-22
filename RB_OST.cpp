@@ -242,7 +242,7 @@ void RB_OST::GetWindowLastK(Node* raiz, int start_moment, int end_moment, MiArra
     }
 }
 
-void RB_OST::Insert(const char* noticia, uint64_t moment,int k_factor,int m_factor,int start_moment,int end_moment,bool ultimos_k) {
+void RB_OST::Insert(const char* noticia, uint64_t moment,int k_factor,int m_factor,bool ultimos_k) {
     Node* encontro = Delete(noticia);
     Node** raiz = &root;
     Node* prev_parent = nil;

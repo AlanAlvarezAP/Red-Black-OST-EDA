@@ -22,22 +22,29 @@ void Preprocesador::Limpieza(const std::string& texto) {
 		std::cout << " No se puedo leer el archivo " << std::endl;
 		return;
 	}
+	final_text.reserve(100000);
+	bool space = true;
+
 	while (std::getline(lector,lineas)) {
 		for (unsigned char c : lineas) {
-			if (c == '\t' || c == '\n') {
-				final_text.push_back(' ');
-			}
-			else if (c == ' ') {
+			c = std::tolower(c);
+			if (c >= 'a' && c <= 'z') {
 				final_text.push_back(c);
+				space = false;
 			}
-			else if (std::isalpha(static_cast<unsigned char>(c))) {
-				final_text.push_back(std::tolower(c));
+			else if (!space) {
+				final_text.push_back(' ');
+				space = true;
 			}
 		}
-		final_text.push_back(' ');
+		if (!space) {
+			final_text.push_back(' ');
+			space = true;
+		}
 	}
-	final_text = std::regex_replace(final_text, std::regex("^\\s+|\\s+$"), "");
-	final_text = std::regex_replace(final_text, std::regex("\\s+"), " ");
+	if (!final_text.empty() && final_text.back() == ' ') {
+		final_text.pop_back();
+	}
 	lector.close();
 }
 
@@ -70,6 +77,9 @@ void Preprocesador::Stop_words() {
 
 void Preprocesador::Porter_Stemming() {
 	for (int i = 0; i < tokens.size(); i++) {
+		if (static_cast<int>(tokens[i].size()) <= 2) {
+			continue;
+		}
 		Porter port(tokens[i]);
 		port.paso_1_a_b();
 		port.paso_1_c();
@@ -102,8 +112,6 @@ std::vector<std::string> Preprocesador::generar_ngrams(const std::vector<std::st
 
 void Preprocesador::Conteo() {
 	std::unordered_map<std::string, int> conteo_unigram;
-	std::unordered_map<std::string, int> conteo_bigrams;
-	std::unordered_map<std::string, int> conteo_trigrams;
 	for (const auto& p : tokens) {
 		conteo_unigram[p]++;
 	}
