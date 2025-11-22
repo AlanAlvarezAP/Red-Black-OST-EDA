@@ -136,21 +136,21 @@ void Porter::paso_1_a_b() {
 		}
 		else if (copy_of_original[end_index - 1] != 's') {
 			end_index--;
-			copy_of_original = copy_of_original.substr(0, end_index + 1);
+			copy_of_original.resize(end_index + 1);
 			auxiliar_index = end_index;
 		}
 	}
 	if (check_fin("eed")) {
 		if (m() > 0) {
 			end_index--;
-			copy_of_original = copy_of_original.substr(0, end_index + 1);
+			copy_of_original.resize(end_index + 1);
 			auxiliar_index = end_index;
 		}
 	}
 	else if ((check_fin("ed") || check_fin("ing")) && vocal_en_rango()) {
 		int old_aux = auxiliar_index;
 		end_index = auxiliar_index;
-		copy_of_original = copy_of_original.substr(0, end_index + 1);
+		copy_of_original.resize(end_index + 1);
 		auxiliar_index = old_aux;
 		if (check_fin("at")) {
 			cambiar_rango("ate");
@@ -165,7 +165,7 @@ void Porter::paso_1_a_b() {
 			char last = copy_of_original[end_index];
 			if (last != 'l' && last != 's' && last != 'z') {
 				end_index--;
-				copy_of_original = copy_of_original.substr(0, end_index + 1);
+				copy_of_original.resize(end_index + 1);
 				auxiliar_index = end_index;
 			}
 		}
@@ -423,7 +423,7 @@ void Porter::paso_5_a_b() {
 	}
 	if (check_fin("l") && m() > 1 && doble_consonante(end_index)) {
 		end_index--;
-		copy_of_original = copy_of_original.substr(0, end_index + 1);
+		copy_of_original.resize(end_index + 1);
 		auxiliar_index = end_index;
 	}
 }

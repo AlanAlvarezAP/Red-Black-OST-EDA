@@ -42,8 +42,6 @@ void reset_top() {
         return;
     }
     archivo.close();
-
-    std::cout << "Archivo limpiado correctamente" << std::endl;
 }
 
 int main()
@@ -58,7 +56,7 @@ int main()
     bool se_mantenga=false;
     std::cout << " Bienvenido al proyecto de EDA ||| RB-OST para Streaming continuo |||" << std::endl;
     uint64_t momento_global = 1;
-    auto archivos = leer_archivos_carpeta("EDA input");
+    auto archivos = leer_archivos_carpeta("data");
     int k_factor=0;
     int m_factor=0;
     int end_moment=0;
@@ -75,6 +73,7 @@ int main()
     double total_general = 0;
     auto inicio_general = std::chrono::high_resolution_clock::now();
     for (const auto f : archivos) {
+        double insert_final = 0;
         auto inicio = std::chrono::high_resolution_clock::now();
         prepo.reset();
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -158,9 +157,11 @@ int main()
             arbol.Insert(prepo.topics[i].c_str(), momento_global, k_factor, m_factor, ultimos_k);
             auto t4 = std::chrono::high_resolution_clock::now();
             insert += std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count();
+            insert_final = std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count();
         }
         total_topics += prepo.topics.size();
         if (al_final == 'n') {
+            double time_query = 0;
             MiArray<Topk> window;
             if (ultimos_k) {
                 int k_factor_cambiable = k_factor;
@@ -176,18 +177,27 @@ int main()
                 if (rank <= 0) {
                     rank = 1;
                 }
+                auto t5 = std::chrono::high_resolution_clock::now();
                 Node* raiz_ultimos = arbol.Select(arbol.root, rank);
                 arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor_cambiable, m_factor);
+                auto t6 = std::chrono::high_resolution_clock::now();
+                time_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
             }
             else {
+                auto t5 = std::chrono::high_resolution_clock::now();
                 arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
+                auto t6 = std::chrono::high_resolution_clock::now();
+                time_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
             }
+            std::cout << "Tiempo de query final " << std::fixed << time_query << "ns" << std::endl;
+            std::cout << "Tiempo que tardo insert " << std::fixed << insert_final << "ns" << std::endl;
             escribir_top_csv(window);
             system("python script_wordcloud.py topk.csv");
         }
         momento_global++;
 
     }
+    
     
     MiArray<Topk> window;
     double duracion_query = 0;
@@ -205,31 +215,34 @@ int main()
         if (rank <= 0) {
             rank = 1;
         }
-        Node* raiz_ultimos = arbol.Select(arbol.root, rank);
         auto t5 = std::chrono::high_resolution_clock::now();
+        Node* raiz_ultimos = arbol.Select(arbol.root, rank);
         arbol.GetWindowLastK(raiz_ultimos, start_moment, end_moment, window, k_factor_cambiable, m_factor);
         auto t6 = std::chrono::high_resolution_clock::now();
         duracion_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
     }
     else {
+        auto t5 = std::chrono::high_resolution_clock::now();
         arbol.GetWindow(arbol.root, start_moment, end_moment, window, m_factor);
+        auto t6 = std::chrono::high_resolution_clock::now();
+        duracion_query = std::chrono::duration_cast<std::chrono::nanoseconds>(t6 - t5).count();
     }
     auto fin_general = std::chrono::high_resolution_clock::now();
     auto duracion_general = std::chrono::duration_cast<std::chrono::nanoseconds>(fin_general - inicio_general).count();;
     escribir_top_csv(window);
     std::cout << "--- Wordcloud generada para esta noticia ---" << std::endl;
     system("python script_wordcloud.py topk.csv");
-    arbol.preprinting();
+    //arbol.preprinting();
     std::cout << "TIEMPO DE TODO " << std::fixed << duracion_general << "ns" << std::endl;
     std::cout << "Tiempo de query final " << std::fixed << duracion_query << "ns" << std::endl;
     std::cout << "Tiempo que tardo insert " << std::fixed << insert << "ns" << std::endl;
     std::cout << "Tiempo que tardo toda la prepo " << std::fixed << duracion << "ns" << std::endl;
-    std::cout << "--------------------------------------------\n";
-    std::cout << "Tiempo total LIMPIEZA:        " << std::fixed << tiempo_limpieza_ns << " ns\n";
-    std::cout << "Tiempo total TOKENIZACION:    " << std::fixed << tiempo_tokenizar_ns << " ns\n";
-    std::cout << "Tiempo total STOP WORDS:      " << std::fixed << tiempo_stopwords_ns << " ns\n";
-    std::cout << "Tiempo total STEMMING:        " << std::fixed << tiempo_stemming_ns << " ns\n";
-    std::cout << "Tiempo total CONTEO:          " << std::fixed << tiempo_conteo_ns << " ns\n";
-    std::cout << "--------------------------------------------\n";
+    std::cout << "--------------------------------------------" << std::endl;
+    std::cout << "Tiempo total LIMPIEZA:        " << std::fixed << tiempo_limpieza_ns << " ns" << std::endl;
+    std::cout << "Tiempo total TOKENIZACION:    " << std::fixed << tiempo_tokenizar_ns << " ns" << std::endl;
+    std::cout << "Tiempo total STOP WORDS:      " << std::fixed << tiempo_stopwords_ns << " ns" << std::endl;
+    std::cout << "Tiempo total STEMMING:        " << std::fixed << tiempo_stemming_ns << " ns" << std::endl;
+    std::cout << "Tiempo total CONTEO:          " << std::fixed << tiempo_conteo_ns << " ns" << std::endl;
+    std::cout << "--------------------------------------------" << std::endl;
     return 0;
 }

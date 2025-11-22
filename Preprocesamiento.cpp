@@ -32,11 +32,9 @@ void Preprocesador::Limpieza(const std::string& texto) {
 				final_text.push_back(c);
 				space = false;
 			}
-			else {
-				if (!space) {
-					final_text.push_back(' ');
-					space = true;
-				}
+			else if (!space) {
+				final_text.push_back(' ');
+				space = true;
 			}
 		}
 		if (!space) {
@@ -79,6 +77,9 @@ void Preprocesador::Stop_words() {
 
 void Preprocesador::Porter_Stemming() {
 	for (int i = 0; i < tokens.size(); i++) {
+		if (static_cast<int>(tokens[i].size()) <= 2) {
+			continue;
+		}
 		Porter port(tokens[i]);
 		port.paso_1_a_b();
 		port.paso_1_c();
@@ -111,8 +112,6 @@ std::vector<std::string> Preprocesador::generar_ngrams(const std::vector<std::st
 
 void Preprocesador::Conteo() {
 	std::unordered_map<std::string, int> conteo_unigram;
-	std::unordered_map<std::string, int> conteo_bigrams;
-	std::unordered_map<std::string, int> conteo_trigrams;
 	for (const auto& p : tokens) {
 		conteo_unigram[p]++;
 	}
