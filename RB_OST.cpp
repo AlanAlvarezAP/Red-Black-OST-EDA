@@ -1,6 +1,6 @@
 #include "RB_OST.h"
 
-Node::Node(const char* noti,uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p, int siz) {
+Node::Node(const char* noti,unsigned long long mome, bool col, unsigned long long max_moment, Node* l, Node* r, Node* p, int siz) {
 	color = col;
 	left = l;
 	right = r;
@@ -179,7 +179,7 @@ void RB_OST::GetWindow(Node* raiz, int start_moment, int end_moment, MiArray<Top
 
     int count = 0;
     for (int i = raiz->momentos.get_size() - 1;i >= 0;i--) {
-        uint64_t amount_moments = raiz->momentos[i];
+        unsigned long long amount_moments = raiz->momentos[i];
         if (amount_moments < start_moment) {
             break;
         }
@@ -212,7 +212,7 @@ void RB_OST::GetWindowLastK(Node* raiz, int start_moment, int end_moment, MiArra
         
         int count_2 = 0;
         for (int i = nodo->momentos.get_size() - 1; i >= 0;i--) {
-            uint64_t amount_moments = nodo->momentos[i];
+            unsigned long long amount_moments = nodo->momentos[i];
             if (amount_moments < start_moment) {
                 break;
             }
@@ -242,7 +242,7 @@ void RB_OST::GetWindowLastK(Node* raiz, int start_moment, int end_moment, MiArra
     }
 }
 
-void RB_OST::Insert(const char* noticia, uint64_t moment,int k_factor,int m_factor,bool ultimos_k) {
+void RB_OST::Insert(const char* noticia, unsigned long long moment,int k_factor,int m_factor,bool ultimos_k) {
     Node* encontro = Delete(noticia);
     Node** raiz = &root;
     Node* prev_parent = nil;

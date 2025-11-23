@@ -13,13 +13,13 @@ public:
 	char* topico;
 	bool color;
 	int size;
-	MiArray<uint64_t> momentos;
+	MiArray<unsigned long long> momentos;
 	Node* left;
 	Node* right;
 	Node* parent;
-	uint64_t max_moment_subtree,frecuencia_ventana,frecuencia;
+	unsigned long long max_moment_subtree,frecuencia_ventana,frecuencia;
 
-	Node(const char* noti, uint64_t mome, bool col, uint64_t max_moment, Node* l, Node* r, Node* p , int siz = 1);
+	Node(const char* noti, unsigned long long mome, bool col, unsigned long long max_moment, Node* l, Node* r, Node* p , int siz = 1);
 
 };
 
@@ -30,7 +30,7 @@ public:
 	UnorderedHash hash;
 
 	RB_OST();
-	void Insert(const char* noticia, uint64_t moment,int k_factor, int m_factor, bool ultimos_k);
+	void Insert(const char* noticia, unsigned long long moment,int k_factor, int m_factor, bool ultimos_k);
 	void AjustarForma(Node* raiz);
 	void RotacionIzq(Node* raiz);
 	void RotacionDer(Node* raiz);
