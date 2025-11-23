@@ -371,7 +371,6 @@ void RB_OST::DeleteFix(Node* raiz) {
 Node* RB_OST::Delete(const char* str) {
     HashNode* find = hash[str];
     if (!find) {
-        //std::cout << " No se encontro el nodo :( en la hash" << std::endl;
         return nullptr;
     }
     Node* replacing_node_z = find->value;
