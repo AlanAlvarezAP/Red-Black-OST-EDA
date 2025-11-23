@@ -91,3 +91,7 @@ Para la instalación se necesitara las siguientes dependencias:
 Tomar en cuenta que para el Red-Black-OST-EDA.cpp tomar en cuenta que se utiliza `#include <windows.h>` por ende su compilación entre otros sistemas operativos fallara 
 # Ejecución
 Habiendo realizado los pasos de la dependencia simplemente llamar dependiendo del comando g++ en este caso **programa** se llamaria ./program
+
+![foto1](https://github.com/AlanAlvarezAP/Red-Black-OST-EDA/blob/main/fot_1.png?raw=true)
+![foto2](https://github.com/AlanAlvarezAP/Red-Black-OST-EDA/blob/main/fot_2.png?raw=true)
+![foto3](https://github.com/AlanAlvarezAP/Red-Black-OST-EDA/blob/main/fot_3.png?raw=true)
