@@ -20,6 +20,8 @@ Se incluyen los siguientes archivos en el repositorio:
 
 Además considerar que en la entrega respectiva se añadio los archivos `topk.csv` donde se guardara los tops ejecutados y `stop_words.txt` que contiene las stopwords respectivas con `script_wordcloud.py` para la visualización de la Wordcloud
 
+# Arquitectura
+![Arquitectura clases](https://github.com/AlanAlvarezAP/Red-Black-OST-EDA/blob/main/Arquitectura%20RB_OST.png?raw=true)
 
 # Funcionalidades
 El proyecto permite realizar la siguiente funcionalidades:  
