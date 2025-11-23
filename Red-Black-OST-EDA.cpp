@@ -75,7 +75,7 @@ int main()
             break;
         }
 
-        uint64_t momento_global = 1;
+        int momento_global = 1;
         int k_factor = 0;
         int m_factor = 0;
         int end_moment = 0;
@@ -217,7 +217,7 @@ int main()
                 system("python script_wordcloud.py topk.csv");
             }
             momento_global++;
-
+            arbol.preprinting();
         }
         MiArray<Topk> window;
         double duracion_query = 0;

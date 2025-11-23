@@ -13,7 +13,7 @@ public:
 class UnorderedHash {
 public:
 	HashNode** tabla;
-	uint64_t hash_prime;
+	unsigned long long hash_prime;
 	int size;
 	float load_factor;
 	int num_elements;

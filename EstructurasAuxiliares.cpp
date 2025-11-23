@@ -24,7 +24,7 @@ UnorderedHash::UnorderedHash() {
 	for (int i = 0;i < size;i++) {
 		tabla[i] = nullptr;
 	}
-	hash_prime = 1099511628211u;
+	hash_prime = 1099511628211ULL;
 	load_factor = 0.7;
 	num_elements = 0;
 }
@@ -40,9 +40,9 @@ UnorderedHash::~UnorderedHash() {
 	delete[] tabla;
 }
 int UnorderedHash::Hash_Func(const char* str, int sizee) {
-	uint64_t hash_offset = 14695981039346656037u;
+	unsigned long long hash_offset = 14695981039346656037ULL;
 	for (int i = 0; str[i]; i++) {
-		hash_offset ^= static_cast<uint64_t>(str[i]);
+		hash_offset ^= static_cast<unsigned long long>(str[i]);
 		hash_offset *= hash_prime;
 	}
 	return static_cast<int>(hash_offset % sizee);
